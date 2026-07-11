@@ -6,7 +6,7 @@ renderPage({
   title: 'Create listing',
   intro: 'Add the core details buyers need before publishing.',
   content: `
-    <form class="bg-white border rounded-3 p-4">
+    <form class="form-card">
       <div class="row g-3">
         <div class="col-lg-8">
           <label class="form-label" for="title">Title</label>
@@ -41,7 +41,10 @@ renderPage({
           <textarea class="form-control" id="description" name="description" rows="5"></textarea>
         </div>
       </div>
-      <button class="btn btn-primary mt-4" type="submit">Save listing</button>
+      <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+        <button class="btn btn-primary" type="submit">Save listing</button>
+        <a class="btn btn-outline-primary" href="/">Cancel</a>
+      </div>
     </form>
   `
 });

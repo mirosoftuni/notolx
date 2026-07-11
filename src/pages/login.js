@@ -5,10 +5,13 @@ renderPage({
   eyebrow: 'Account',
   title: 'Login',
   intro: 'Access your listings, saved offers, and messages.',
+  contentClass: 'auth-layout d-flex align-items-center',
   content: `
-    <div class="row justify-content-center">
+    <div class="row justify-content-center w-100">
       <div class="col-md-8 col-lg-5">
-        <form class="bg-white border rounded-3 p-4">
+        <form class="auth-card">
+          <h2 class="h4 fw-bold mb-1">Welcome back</h2>
+          <p class="text-secondary mb-4">Pick up where you left off.</p>
           <div class="mb-3">
             <label class="form-label" for="email">Email</label>
             <input class="form-control" id="email" name="email" type="email" autocomplete="email" required />

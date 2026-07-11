@@ -5,10 +5,13 @@ renderPage({
   eyebrow: 'Account',
   title: 'Create account',
   intro: 'Start selling, buying, and managing your marketplace profile.',
+  contentClass: 'auth-layout d-flex align-items-center',
   content: `
-    <div class="row justify-content-center">
+    <div class="row justify-content-center w-100">
       <div class="col-md-8 col-lg-6">
-        <form class="bg-white border rounded-3 p-4">
+        <form class="auth-card">
+          <h2 class="h4 fw-bold mb-1">Join NOTOLX</h2>
+          <p class="text-secondary mb-4">Create your seller profile and start listing locally.</p>
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label" for="name">Name</label>

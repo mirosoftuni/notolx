@@ -14,14 +14,14 @@ renderPage({
         ['Reports', '3']
       ].map(([label, value]) => `
         <div class="col-sm-6 col-xl-3">
-          <div class="bg-white border rounded-3 p-4">
+          <div class="metric-card p-4">
             <p class="text-secondary mb-1">${label}</p>
             <p class="h3 fw-bold mb-0">${value}</p>
           </div>
         </div>
       `).join('')}
     </div>
-    <section class="bg-white border rounded-3 p-4">
+    <section class="surface-card p-4">
       <h2 class="h5 fw-semibold mb-3">Recent moderation queue</h2>
       <div class="table-responsive">
         <table class="table align-middle mb-0">
