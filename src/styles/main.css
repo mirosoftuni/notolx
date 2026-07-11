@@ -13,6 +13,35 @@ body {
   letter-spacing: 0.08em;
 }
 
-.status-panel {
-  max-width: 28rem;
+.nav-link.active {
+  color: var(--bs-primary);
+}
+
+.page-heading {
+  box-shadow: 0 0.25rem 1.5rem rgb(15 23 42 / 4%);
+}
+
+.category-tile,
+.list-group-item,
+.btn {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.category-tile:hover {
+  border-color: var(--bs-primary) !important;
+  box-shadow: 0 0.75rem 1.5rem rgb(15 23 42 / 8%);
+  transform: translateY(-2px);
+}
+
+.listing-photo {
+  min-height: clamp(18rem, 48vw, 32rem);
+}
+
+.price {
+  color: #0f766e;
+  font-size: 1.75rem;
+  font-weight: 700;
 }
