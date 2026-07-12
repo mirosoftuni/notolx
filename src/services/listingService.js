@@ -99,6 +99,7 @@ export async function listCategories({ activeOnly = true } = {}) {
 export async function listListings({
   search = '',
   categoryId,
+  ownerId,
   status = 'active',
   limit = 12
 } = {}) {
@@ -107,14 +108,21 @@ export async function listListings({
   let query = supabase
     .from('listings')
     .select(LISTING_SELECT)
-    .eq('status', status)
     .order('is_featured', { ascending: false })
     .order('published_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
     .limit(limit);
 
+  if (status) {
+    query = query.eq('status', status);
+  }
+
   if (categoryId) {
     query = query.eq('category_id', categoryId);
+  }
+
+  if (ownerId) {
+    query = query.eq('owner_id', ownerId);
   }
 
   if (searchTerm) {

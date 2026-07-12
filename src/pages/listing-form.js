@@ -5,6 +5,10 @@ import {
   listCategories,
   updateListing
 } from '../services/listingService.js';
+import {
+  uploadListingPhotos,
+  validateListingPhotoFiles
+} from '../services/storageService.js';
 import { createFormController } from '../shared/formController.js';
 import { escapeHtml } from '../shared/listingView.js';
 import { renderPage } from '../shared/page.js';
@@ -59,6 +63,12 @@ renderPage({
           <textarea class="form-control" id="description" name="description" rows="5" minlength="10" required></textarea>
           <div class="invalid-feedback" data-field-error="description"></div>
         </div>
+        <div class="col-12">
+          <label class="form-label" for="photos">Photos</label>
+          <input class="form-control" id="photos" name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+          <div class="form-text" data-existing-photo-summary>Upload up to 6 JPG, PNG, or WebP photos.</div>
+          <div class="invalid-feedback" data-field-error="photos"></div>
+        </div>
       </div>
       <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
         <button class="btn btn-primary" type="submit">${listingId ? 'Save changes' : 'Save listing'}</button>
@@ -70,6 +80,7 @@ renderPage({
 
 const listingForm = createFormController('#listingForm');
 const categorySelect = listingForm.form.elements.categoryId;
+const existingPhotoSummary = document.querySelector('[data-existing-photo-summary]');
 
 function redirectToLogin() {
   const redirect = `${window.location.pathname}${window.location.search}`;
@@ -106,6 +117,12 @@ function validateListing(values) {
     errors.description = 'The description must be at least 10 characters.';
   }
 
+  const photoError = validateListingPhotoFiles(listingForm.form.elements.photos.files);
+
+  if (photoError) {
+    errors.photos = photoError;
+  }
+
   return errors;
 }
 
@@ -116,6 +133,12 @@ function fillForm(listing) {
   listingForm.form.elements.currency.value = listing.currency ?? 'BGN';
   listingForm.form.elements.location.value = listing.location ?? '';
   listingForm.form.elements.description.value = listing.description ?? '';
+
+  const photoCount = listing.photos?.length ?? 0;
+
+  if (photoCount > 0) {
+    existingPhotoSummary.textContent = `${photoCount} uploaded photo${photoCount === 1 ? '' : 's'}. Add more JPG, PNG, or WebP photos.`;
+  }
 }
 
 async function requireAuthenticatedUser() {
@@ -227,6 +250,26 @@ listingForm.form.addEventListener('submit', async (event) => {
     if (result.error || !result.listing?.id) {
       listingForm.showMessage('Listing could not be saved. Check the fields and try again.');
       return;
+    }
+
+    const photoFiles = listingForm.form.elements.photos.files;
+
+    if (photoFiles.length > 0) {
+      listingForm.setLoading(true, 'Uploading photos...');
+
+      const uploadResult = await uploadListingPhotos({
+        listingId: result.listing.id,
+        ownerId: currentUser.id,
+        files: photoFiles,
+        altText: values.title,
+        startSortOrder: editingListing?.photos?.length ?? 0,
+        hasExistingPrimary: editingListing?.photos?.some((photo) => photo.is_primary) ?? false
+      });
+
+      if (uploadResult.error) {
+        listingForm.showMessage('Listing details were saved, but photos could not be uploaded. Check the files and try again.');
+        return;
+      }
     }
 
     window.location.assign(`/listing.html?id=${encodeURIComponent(result.listing.id)}`);

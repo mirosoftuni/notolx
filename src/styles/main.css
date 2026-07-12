@@ -206,6 +206,26 @@ body {
   font-size: 1.75rem;
 }
 
+.avatar-preview {
+  display: grid;
+  flex: 0 0 auto;
+  width: 5.5rem;
+  height: 5.5rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--notolx-line);
+  border-radius: 50%;
+  color: #fff;
+  background: var(--notolx-primary);
+  font-weight: 800;
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .auth-layout {
   min-height: 58vh;
 }
