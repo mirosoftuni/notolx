@@ -152,8 +152,60 @@ export async function getListing(id) {
   };
 }
 
+export async function createListing(input) {
+  const supabase = getSupabaseClient();
+  const payload = {
+    owner_id: input.ownerId,
+    category_id: Number(input.categoryId),
+    title: input.title,
+    description: input.description,
+    price: Number(input.price),
+    currency: input.currency ?? 'BGN',
+    location: input.location,
+    status: input.status ?? 'active',
+    published_at: input.publishedAt ?? new Date().toISOString()
+  };
+
+  const { data, error } = await supabase
+    .from('listings')
+    .insert(payload)
+    .select('id')
+    .single();
+
+  return {
+    listing: data,
+    error
+  };
+}
+
+export async function updateListing(id, input) {
+  const supabase = getSupabaseClient();
+  const payload = {
+    category_id: Number(input.categoryId),
+    title: input.title,
+    description: input.description,
+    price: Number(input.price),
+    currency: input.currency ?? 'BGN',
+    location: input.location
+  };
+
+  const { data, error } = await supabase
+    .from('listings')
+    .update(payload)
+    .eq('id', id)
+    .select('id')
+    .single();
+
+  return {
+    listing: data,
+    error
+  };
+}
+
 export const listingService = {
   listCategories,
   listListings,
-  getListing
+  getListing,
+  createListing,
+  updateListing
 };
