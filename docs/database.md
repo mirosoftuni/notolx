@@ -56,7 +56,7 @@ Stores marketplace listings.
 Key fields:
 
 - `id`: UUID primary key.
-- `seller_id`: Foreign key to `profiles.id`.
+- `owner_id`: Foreign key to `profiles.id`.
 - `category_id`: Foreign key to `categories.id`.
 - `title`, `description`, `price`, `currency`, `condition`, `status`, `location`.
 - `contact_phone`: Optional listing-specific contact phone.
@@ -245,7 +245,7 @@ erDiagram
 
   LISTINGS {
     uuid id PK
-    uuid seller_id FK
+    uuid owner_id FK
     bigint category_id FK
     text title
     text description

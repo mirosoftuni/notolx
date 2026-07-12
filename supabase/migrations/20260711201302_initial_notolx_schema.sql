@@ -59,7 +59,7 @@ create table public.categories (
 
 create table public.listings (
   id uuid primary key default gen_random_uuid(),
-  seller_id uuid not null references public.profiles(id) on delete cascade,
+  owner_id uuid not null constraint listings_owner_id_fkey references public.profiles(id) on delete cascade,
   category_id bigint not null references public.categories(id) on delete restrict,
   title text not null,
   description text not null,
@@ -108,7 +108,7 @@ create index user_roles_role_idx on public.user_roles(role);
 create index categories_parent_id_idx on public.categories(parent_id);
 create index categories_active_sort_idx on public.categories(is_active, sort_order, name);
 
-create index listings_seller_id_idx on public.listings(seller_id);
+create index listings_owner_id_idx on public.listings(owner_id);
 create index listings_category_id_idx on public.listings(category_id);
 create index listings_status_created_at_idx on public.listings(status, created_at desc);
 create index listings_active_category_price_idx on public.listings(category_id, price)
@@ -323,7 +323,7 @@ for select
 to authenticated
 using (
   status = 'active'
-  or seller_id = (select auth.uid())
+  or owner_id = (select auth.uid())
   or (select private.is_admin())
 );
 
@@ -331,20 +331,20 @@ create policy "Users can create their own listings"
 on public.listings
 for insert
 to authenticated
-with check (seller_id = (select auth.uid()));
+with check (owner_id = (select auth.uid()));
 
 create policy "Users can update their own listings"
 on public.listings
 for update
 to authenticated
-using (seller_id = (select auth.uid()) or (select private.is_admin()))
-with check (seller_id = (select auth.uid()) or (select private.is_admin()));
+using (owner_id = (select auth.uid()) or (select private.is_admin()))
+with check (owner_id = (select auth.uid()) or (select private.is_admin()));
 
 create policy "Users can delete their own listings"
 on public.listings
 for delete
 to authenticated
-using (seller_id = (select auth.uid()) or (select private.is_admin()));
+using (owner_id = (select auth.uid()) or (select private.is_admin()));
 
 create policy "Anyone can read active listing photos"
 on public.listing_photos
@@ -384,7 +384,7 @@ with check (
     select 1
     from public.listings
     where listings.id = listing_photos.listing_id
-      and listings.seller_id = (select auth.uid())
+      and listings.owner_id = (select auth.uid())
   )
 );
 
@@ -399,7 +399,7 @@ with check (
     select 1
     from public.listings
     where listings.id = listing_photos.listing_id
-      and (listings.seller_id = (select auth.uid()) or (select private.is_admin()))
+      and (listings.owner_id = (select auth.uid()) or (select private.is_admin()))
   )
 );
 
@@ -480,7 +480,7 @@ with check (
     select 1
     from public.listings
     where listings.id::text = (storage.foldername(name))[2]
-      and listings.seller_id = (select auth.uid())
+      and listings.owner_id = (select auth.uid())
   )
 );
 
@@ -507,7 +507,7 @@ with check (
       select 1
       from public.listings
       where listings.id::text = (storage.foldername(name))[2]
-        and listings.seller_id = (select auth.uid())
+        and listings.owner_id = (select auth.uid())
     )
   )
 );

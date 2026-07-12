@@ -176,6 +176,8 @@ body {
   background:
     linear-gradient(135deg, rgb(20 108 148 / 16%), rgb(244 166 42 / 18%)),
     #edf4f6;
+  background-position: center;
+  background-size: cover;
 }
 
 .listing-card-price,
@@ -189,6 +191,15 @@ body {
   background:
     linear-gradient(135deg, rgb(20 108 148 / 13%), rgb(244 166 42 / 18%)),
     #edf4f6;
+}
+
+.listing-photo-image {
+  background-position: center;
+  background-size: cover;
+}
+
+.white-space-pre-line {
+  white-space: pre-line;
 }
 
 .price {
