@@ -59,6 +59,10 @@ Repair applied through Supabase MCP on July 12, 2026:
   - Applied the NOTOLX schema from `supabase/migrations/20260711201302_initial_notolx_schema.sql`.
 - `20260712091214_backfill_notolx_profiles_for_existing_auth_users`
   - Created matching `profiles` and `user_roles` records for auth users that existed before the repair.
+- `20260712093023_add_profile_preferred_language`
+  - Added `profiles.preferred_language` for persisted UI language preference.
+  - Default language is `bg`; allowed values are `bg` and `en`.
+  - Updated the auth trigger so new profiles receive the language from auth metadata when provided.
 
 Verification result after repair:
 
@@ -74,6 +78,8 @@ Verification result after repair:
   - `auth.users`: `3`
   - `profiles`: `3`
   - `user_roles`: `3`
+- Language preference:
+  - `profiles.preferred_language`: `bg` for all existing profiles after backfill.
 - REST checks with the local `.env` key returned `200` for:
   - `categories`
   - `listings`

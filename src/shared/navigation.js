@@ -1,14 +1,21 @@
+import {
+  getCurrentLanguage,
+  setCurrentLanguage,
+  SUPPORTED_LANGUAGES,
+  t
+} from './i18n.js';
+
 const navItems = [
-  { id: 'home', label: 'Home', href: '/' },
-  { id: 'listing', label: 'Listing', href: '/listing.html' },
-  { id: 'create', label: 'Sell', href: '/listing-form.html' },
-  { id: 'profile', label: 'Profile', href: '/profile.html' },
-  { id: 'admin', label: 'Admin', href: '/admin.html' }
+  { id: 'home', labelKey: 'nav.home', href: '/' },
+  { id: 'listing', labelKey: 'nav.listing', href: '/listing.html' },
+  { id: 'create', labelKey: 'nav.create', href: '/listing-form.html' },
+  { id: 'profile', labelKey: 'nav.profile', href: '/profile.html' },
+  { id: 'admin', labelKey: 'nav.admin', href: '/admin.html' }
 ];
 
 const authItems = [
-  { id: 'login', label: 'Login', href: '/login.html' },
-  { id: 'register', label: 'Register', href: '/register.html', style: 'button' }
+  { id: 'login', labelKey: 'nav.login', href: '/login.html' },
+  { id: 'register', labelKey: 'nav.register', href: '/register.html', style: 'button' }
 ];
 
 function renderNavLink(item, activePage) {
@@ -20,10 +27,49 @@ function renderNavLink(item, activePage) {
   return `
     <li class="nav-item">
       <a class="${className}" ${isActive ? 'aria-current="page"' : ''} href="${item.href}">
-        ${item.label}
+        ${t(item.labelKey)}
       </a>
     </li>
   `;
+}
+
+function renderLanguageSwitcher() {
+  const currentLanguage = getCurrentLanguage();
+
+  return `
+    <li class="nav-item dropdown">
+      <button
+        class="nav-link dropdown-toggle bg-transparent border-0"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        ${t('nav.language')}: ${t(`nav.${currentLanguage}`)}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-lg-end">
+        ${SUPPORTED_LANGUAGES.map((language) => `
+          <li>
+            <button
+              class="dropdown-item${language === currentLanguage ? ' active' : ''}"
+              type="button"
+              data-language="${language}"
+            >
+              ${t(`nav.${language}`)}
+            </button>
+          </li>
+        `).join('')}
+      </ul>
+    </li>
+  `;
+}
+
+export function bindLanguageSwitcher() {
+  document.querySelectorAll('[data-language]').forEach((button) => {
+    button.addEventListener('click', () => {
+      setCurrentLanguage(button.dataset.language);
+      window.location.reload();
+    });
+  });
 }
 
 export function renderNavigation(activePage = 'home') {
@@ -41,7 +87,7 @@ export function renderNavigation(activePage = 'home') {
           data-bs-target="#mainNavigation"
           aria-controls="mainNavigation"
           aria-expanded="false"
-          aria-label="Toggle navigation"
+          aria-label="${t('nav.toggle')}"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -51,6 +97,7 @@ export function renderNavigation(activePage = 'home') {
             ${navItems.map((item) => renderNavLink(item, activePage)).join('')}
           </ul>
           <ul class="navbar-nav align-items-lg-center gap-lg-2">
+            ${renderLanguageSwitcher()}
             ${authItems.map((item) => renderNavLink(item, activePage)).join('')}
           </ul>
         </div>

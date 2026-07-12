@@ -15,6 +15,7 @@ Key fields:
 - `id`: Primary key and foreign key to `auth.users.id`.
 - `display_name`: Public seller or buyer name.
 - `phone`, `location`, `avatar_url`, `bio`: Optional profile metadata.
+- `preferred_language`: Interface language preference. Defaults to `bg`; valid values are `bg` and `en`.
 - `created_at`, `updated_at`: Audit timestamps.
 
 ### `user_roles`
@@ -121,6 +122,7 @@ The migration defines:
 
 - `public.set_updated_at()`: Shared trigger function for `updated_at`.
 - `private.handle_new_user()`: Auth trigger function that creates a profile and default `user` role after a Supabase Auth user is inserted.
+- The auth trigger stores `preferred_language` from auth metadata when it is `bg` or `en`; otherwise it defaults to `bg`.
 
 Tables with `updated_at` triggers:
 
@@ -221,6 +223,7 @@ erDiagram
     text location
     text avatar_url
     text bio
+    text preferred_language
     timestamptz created_at
     timestamptz updated_at
   }

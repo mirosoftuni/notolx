@@ -1,4 +1,9 @@
 import { listCategories, listListings } from '../services/listingService.js';
+import {
+  localizedCategoryDescription,
+  localizedCategoryName,
+  t
+} from '../shared/i18n.js';
 import { renderPage } from '../shared/page.js';
 import { escapeHtml, renderListingCard } from '../shared/listingView.js';
 
@@ -10,12 +15,12 @@ const state = {
 renderPage({
   activePage: 'home',
   headingStyle: 'hero',
-  eyebrow: 'Local marketplace',
-  title: 'Buy nearby. Sell without the noise.',
-  intro: 'Find trusted local offers, compare prices quickly, and post what you no longer need in minutes.',
+  eyebrow: t('home.eyebrow'),
+  title: t('home.title'),
+  intro: t('home.intro'),
   actions: `
-    <a class="btn btn-primary btn-lg" href="/listing-form.html">Post an item</a>
-    <a class="btn btn-outline-primary btn-lg" href="#browseListings">Browse listings</a>
+    <a class="btn btn-primary btn-lg" href="/listing-form.html">${t('home.post')}</a>
+    <a class="btn btn-outline-primary btn-lg" href="#browseListings">${t('home.browse')}</a>
   `,
   heroAside: `
     <div class="hero-panel p-3 p-sm-4">
@@ -24,22 +29,22 @@ renderPage({
           class="form-control form-control-lg"
           name="search"
           type="search"
-          placeholder="Search bikes, phones, furniture"
-          aria-label="Search listings"
+          placeholder="${t('home.search.placeholder')}"
+          aria-label="${t('home.search.aria')}"
         />
-        <button class="btn btn-primary btn-lg" type="submit">Search</button>
+        <button class="btn btn-primary btn-lg" type="submit">${t('home.search.button')}</button>
       </form>
       <div class="row g-3">
         <div class="col-6">
           <div class="hero-stat pt-3">
             <p class="h4 fw-bold mb-0" data-listing-count>...</p>
-            <p class="text-secondary small mb-0">Active offers</p>
+            <p class="text-secondary small mb-0">${t('home.activeOffers')}</p>
           </div>
         </div>
         <div class="col-6">
           <div class="hero-stat pt-3">
             <p class="h4 fw-bold mb-0" data-category-count>...</p>
-            <p class="text-secondary small mb-0">Categories</p>
+            <p class="text-secondary small mb-0">${t('home.categories')}</p>
           </div>
         </div>
       </div>
@@ -49,21 +54,21 @@ renderPage({
     <section id="browseListings">
       <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
         <div>
-          <p class="eyebrow mb-2">Browse listings</p>
-          <h2 class="h3 fw-bold mb-0">Fresh finds near you</h2>
+          <p class="eyebrow mb-2">${t('home.browseListings')}</p>
+          <h2 class="h3 fw-bold mb-0">${t('home.freshFinds')}</h2>
         </div>
         <form class="d-flex flex-column flex-sm-row gap-2" id="listingFilterForm">
-          <select class="form-select" name="category" aria-label="Filter by category">
-            <option value="">All categories</option>
+          <select class="form-select" name="category" aria-label="${t('home.filterAria')}">
+            <option value="">${t('home.allCategories')}</option>
           </select>
-          <button class="btn btn-outline-primary" type="submit">Filter</button>
+          <button class="btn btn-outline-primary" type="submit">${t('home.filter')}</button>
         </form>
       </div>
 
       <div class="alert" data-listing-message hidden></div>
       <div class="row g-4 mb-5" data-listing-results>
         <div class="col-12">
-          <div class="surface-card p-4 text-center text-secondary">Loading listings...</div>
+          <div class="surface-card p-4 text-center text-secondary">${t('home.loadingListings')}</div>
         </div>
       </div>
     </section>
@@ -71,12 +76,12 @@ renderPage({
     <div class="surface-card p-4">
       <div class="row g-3 align-items-center">
         <div class="col-lg-4">
-          <p class="eyebrow mb-2">Browse by category</p>
-          <h2 class="h4 fw-bold mb-0">Start with what you need</h2>
+          <p class="eyebrow mb-2">${t('home.browseByCategory')}</p>
+          <h2 class="h4 fw-bold mb-0">${t('home.startWithNeed')}</h2>
         </div>
         <div class="col-lg-8">
           <div class="row g-3" data-category-grid>
-            <div class="col-12 text-secondary">Loading categories...</div>
+            <div class="col-12 text-secondary">${t('home.loadingCategories')}</div>
           </div>
         </div>
       </div>
@@ -106,9 +111,9 @@ function clearMessage() {
 
 function renderCategoryOptions(categories) {
   categorySelect.innerHTML = `
-    <option value="">All categories</option>
+    <option value="">${t('home.allCategories')}</option>
     ${categories.map((category) => `
-      <option value="${category.id}">${escapeHtml(category.name)}</option>
+      <option value="${category.id}">${escapeHtml(localizedCategoryName(category))}</option>
     `).join('')}
   `;
 }
@@ -117,8 +122,8 @@ function renderCategoryGrid(categories) {
   categoryGrid.innerHTML = categories.map((category) => `
     <div class="col-6 col-md-3">
       <button class="category-tile text-start w-100 border rounded-3 p-3 h-100 bg-white" type="button" data-category-id="${category.id}">
-        <span class="fw-bold">${escapeHtml(category.name)}</span>
-        <p class="text-secondary small mb-0 mt-1">${escapeHtml(category.description ?? 'Local offers')}</p>
+        <span class="fw-bold">${escapeHtml(localizedCategoryName(category))}</span>
+        <p class="text-secondary small mb-0 mt-1">${escapeHtml(localizedCategoryDescription(category))}</p>
       </button>
     </div>
   `).join('');
@@ -131,7 +136,7 @@ function renderListings(listings) {
     listingResults.innerHTML = `
       <div class="col-12">
         <div class="surface-card p-4 text-center text-secondary">
-          No listings match your search yet.
+          ${t('home.noMatches')}
         </div>
       </div>
     `;
@@ -147,8 +152,8 @@ async function loadCategories() {
   try {
     result = await listCategories();
   } catch {
-    showMessage('Supabase is not configured. Add the project URL and anon key to .env.');
-    categoryGrid.innerHTML = '<div class="col-12 text-secondary">Categories are unavailable.</div>';
+    showMessage(t('home.configError'));
+    categoryGrid.innerHTML = `<div class="col-12 text-secondary">${t('home.categoriesUnavailable')}</div>`;
     categoryCountEl.textContent = '0';
     return;
   }
@@ -156,8 +161,8 @@ async function loadCategories() {
   const { categories, error } = result;
 
   if (error) {
-    showMessage('Categories could not be loaded. Check the Supabase schema and RLS policies.');
-    categoryGrid.innerHTML = '<div class="col-12 text-secondary">Categories are unavailable.</div>';
+    showMessage(t('home.categoriesLoadError'));
+    categoryGrid.innerHTML = `<div class="col-12 text-secondary">${t('home.categoriesUnavailable')}</div>`;
     categoryCountEl.textContent = '0';
     return;
   }
@@ -171,7 +176,7 @@ async function loadListings() {
   clearMessage();
   listingResults.innerHTML = `
     <div class="col-12">
-      <div class="surface-card p-4 text-center text-secondary">Loading listings...</div>
+      <div class="surface-card p-4 text-center text-secondary">${t('home.loadingListings')}</div>
     </div>
   `;
 
@@ -183,11 +188,11 @@ async function loadListings() {
       categoryId: state.categoryId
     });
   } catch {
-    showMessage('Supabase is not configured. Add the project URL and anon key to .env.');
+    showMessage(t('home.configError'));
     listingCountEl.textContent = '0';
     listingResults.innerHTML = `
       <div class="col-12">
-        <div class="surface-card p-4 text-center text-secondary">Listings are unavailable.</div>
+        <div class="surface-card p-4 text-center text-secondary">${t('home.listingsUnavailable')}</div>
       </div>
     `;
     return;
@@ -196,11 +201,11 @@ async function loadListings() {
   const { listings, error } = result;
 
   if (error) {
-    showMessage('Listings could not be loaded. Check the Supabase schema and relationship names.');
+    showMessage(t('home.listingsLoadError'));
     listingCountEl.textContent = '0';
     listingResults.innerHTML = `
       <div class="col-12">
-        <div class="surface-card p-4 text-center text-secondary">Listings are unavailable.</div>
+        <div class="surface-card p-4 text-center text-secondary">${t('home.listingsUnavailable')}</div>
       </div>
     `;
     return;

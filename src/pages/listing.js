@@ -1,22 +1,26 @@
 import { getListing, listListings } from '../services/listingService.js';
+import {
+  localizedCategoryName,
+  t
+} from '../shared/i18n.js';
 import { renderPage } from '../shared/page.js';
 import { escapeHtml, formatPrice, renderListingCard } from '../shared/listingView.js';
 
 renderPage({
   activePage: 'listing',
-  eyebrow: 'Listing',
-  title: 'Listing details',
-  intro: 'View photos, seller details, price, and location.',
-  actions: '<a class="btn btn-outline-primary" href="/listing-form.html">Post similar</a>',
+  eyebrow: t('listing.eyebrow'),
+  title: t('listing.title'),
+  intro: t('listing.intro'),
+  actions: `<a class="btn btn-outline-primary" href="/listing-form.html">${t('listing.postSimilar')}</a>`,
   content: `
     <div class="alert" data-listing-message hidden></div>
     <div data-listing-detail>
-      <div class="surface-card p-4 text-center text-secondary">Loading listing...</div>
+      <div class="surface-card p-4 text-center text-secondary">${t('listing.loading')}</div>
     </div>
     <section class="mt-5">
       <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
-        <h2 class="h4 fw-bold mb-0">Similar listings</h2>
-        <a class="btn btn-sm btn-outline-primary" href="/">Browse more</a>
+        <h2 class="h4 fw-bold mb-0">${t('listing.similar')}</h2>
+        <a class="btn btn-sm btn-outline-primary" href="/">${t('listing.browseMore')}</a>
       </div>
       <div class="row g-4" data-similar-listings></div>
     </section>
@@ -40,7 +44,7 @@ function renderPhoto(listing) {
   if (!photoUrl) {
     return `
       <div class="listing-photo surface-card d-flex align-items-center justify-content-center">
-        <span class="text-secondary fw-semibold">No photo yet</span>
+        <span class="text-secondary fw-semibold">${t('listing.noPhoto')}</span>
       </div>
     `;
   }
@@ -53,10 +57,10 @@ function renderPhoto(listing) {
 }
 
 function renderDetail(listing) {
-  const ownerName = escapeHtml(listing.owner?.display_name ?? 'NOTOLX seller');
+  const ownerName = escapeHtml(listing.owner?.display_name ?? t('listing.defaultSeller'));
   const ownerLocation = escapeHtml(listing.owner?.location ?? listing.location ?? '');
   const contactPhone = listing.contact_phone ?? listing.owner?.phone;
-  const categoryName = escapeHtml(listing.category?.name ?? 'Listing');
+  const categoryName = escapeHtml(listing.category ? localizedCategoryName(listing.category) : t('listing.categoryFallback'));
 
   detailEl.innerHTML = `
     <div class="row g-4">
@@ -73,12 +77,12 @@ function renderDetail(listing) {
           <p class="price mb-3">${formatPrice(listing.price, listing.currency)}</p>
           <p class="text-secondary white-space-pre-line">${escapeHtml(listing.description)}</p>
           <hr />
-          <h3 class="h6 fw-semibold">Seller</h3>
+          <h3 class="h6 fw-semibold">${t('listing.seller')}</h3>
           <p class="mb-1">${ownerName}</p>
           ${ownerLocation ? `<p class="text-secondary small mb-3">${ownerLocation}</p>` : ''}
           ${contactPhone
-            ? `<a class="btn btn-primary w-100" href="tel:${escapeHtml(contactPhone)}">Call seller</a>`
-            : '<a class="btn btn-primary w-100" href="/login.html">Contact seller</a>'
+            ? `<a class="btn btn-primary w-100" href="tel:${escapeHtml(contactPhone)}">${t('listing.callSeller')}</a>`
+            : `<a class="btn btn-primary w-100" href="/login.html">${t('listing.contactSeller')}</a>`
           }
         </article>
       </div>
@@ -111,7 +115,7 @@ async function loadSimilarListings(currentListing) {
   const similarListings = listings.filter((listing) => listing.id !== currentListing.id).slice(0, 3);
   similarEl.innerHTML = similarListings.length > 0
     ? similarListings.map(renderListingCard).join('')
-    : '<div class="col-12 text-secondary">No similar listings yet.</div>';
+    : `<div class="col-12 text-secondary">${t('listing.noSimilar')}</div>`;
 }
 
 async function loadListing() {
@@ -119,7 +123,7 @@ async function loadListing() {
     const listingId = await resolveListingId();
 
     if (!listingId) {
-      detailEl.innerHTML = '<div class="surface-card p-4 text-center text-secondary">No active listings found.</div>';
+      detailEl.innerHTML = `<div class="surface-card p-4 text-center text-secondary">${t('listing.noActive')}</div>`;
       similarEl.innerHTML = '';
       return;
     }
@@ -127,8 +131,8 @@ async function loadListing() {
     const { listing, error } = await getListing(listingId);
 
     if (error || !listing) {
-      showMessage('Listing could not be loaded. Check the Supabase schema and relationship names.');
-      detailEl.innerHTML = '<div class="surface-card p-4 text-center text-secondary">Listing unavailable.</div>';
+      showMessage(t('listing.loadError'));
+      detailEl.innerHTML = `<div class="surface-card p-4 text-center text-secondary">${t('listing.unavailable')}</div>`;
       similarEl.innerHTML = '';
       return;
     }
@@ -137,8 +141,8 @@ async function loadListing() {
     renderDetail(listing);
     await loadSimilarListings(listing);
   } catch {
-    showMessage('Listing could not be loaded. Check Supabase configuration.');
-    detailEl.innerHTML = '<div class="surface-card p-4 text-center text-secondary">Listing unavailable.</div>';
+    showMessage(t('listing.configError'));
+    detailEl.innerHTML = `<div class="surface-card p-4 text-center text-secondary">${t('listing.unavailable')}</div>`;
     similarEl.innerHTML = '';
   }
 }

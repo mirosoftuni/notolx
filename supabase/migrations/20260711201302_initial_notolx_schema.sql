@@ -29,10 +29,12 @@ create table public.profiles (
   location text,
   avatar_url text,
   bio text,
+  preferred_language text not null default 'bg',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint profiles_display_name_length check (char_length(trim(display_name)) between 2 and 80),
-  constraint profiles_bio_length check (bio is null or char_length(bio) <= 500)
+  constraint profiles_bio_length check (bio is null or char_length(bio) <= 500),
+  constraint profiles_preferred_language_check check (preferred_language in ('bg', 'en'))
 );
 
 create table public.user_roles (
@@ -169,6 +171,7 @@ set search_path = public, pg_temp
 as $$
 declare
   fallback_name text;
+  preferred_language text;
 begin
   fallback_name := coalesce(
     nullif(trim(new.raw_user_meta_data->>'display_name'), ''),
@@ -181,8 +184,14 @@ begin
     fallback_name := 'New user';
   end if;
 
-  insert into public.profiles (id, display_name, avatar_url)
-  values (new.id, left(fallback_name, 80), new.raw_user_meta_data->>'avatar_url')
+  preferred_language := case
+    when new.raw_user_meta_data->>'preferred_language' in ('bg', 'en')
+      then new.raw_user_meta_data->>'preferred_language'
+    else 'bg'
+  end;
+
+  insert into public.profiles (id, display_name, avatar_url, preferred_language)
+  values (new.id, left(fallback_name, 80), new.raw_user_meta_data->>'avatar_url', preferred_language)
   on conflict (id) do nothing;
 
   insert into public.user_roles (user_id, role)

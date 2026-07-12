@@ -1,4 +1,5 @@
 import { getSupabaseClient } from './supabaseClient.js';
+import { t } from '../shared/i18n.js';
 
 const LISTING_PHOTOS_BUCKET = 'listing-photos';
 const AVATARS_BUCKET = 'avatars';
@@ -35,15 +36,15 @@ export function validateImageFile(file, {
   required = false
 } = {}) {
   if (!file || file.size === 0) {
-    return required ? 'Choose an image file.' : '';
+    return required ? t('validation.imageRequired') : '';
   }
 
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return 'Use a JPG, PNG, or WebP image.';
+    return t('validation.imageType');
   }
 
   if (maxSizeBytes && file.size > maxSizeBytes) {
-    return `Image must be up to ${Math.floor(maxSizeBytes / 1024 / 1024)} MB.`;
+    return t('validation.imageSize', { size: Math.floor(maxSizeBytes / 1024 / 1024) });
   }
 
   return '';
@@ -53,7 +54,7 @@ export function validateListingPhotoFiles(files) {
   const selectedFiles = Array.from(files ?? []);
 
   if (selectedFiles.length > 6) {
-    return 'Upload up to 6 photos.';
+    return t('validation.photoCount');
   }
 
   return selectedFiles

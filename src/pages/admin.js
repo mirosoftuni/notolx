@@ -1,17 +1,18 @@
 import { renderPage } from '../shared/page.js';
+import { t } from '../shared/i18n.js';
 
 renderPage({
   activePage: 'admin',
-  eyebrow: 'Admin',
-  title: 'Admin dashboard',
-  intro: 'Review marketplace activity, users, listings, and reports.',
+  eyebrow: t('admin.eyebrow'),
+  title: t('admin.title'),
+  intro: t('admin.intro'),
   content: `
     <div class="row g-3 mb-4">
       ${[
-        ['Users', '128'],
-        ['Listings', '342'],
-        ['Pending', '9'],
-        ['Reports', '3']
+        [t('admin.users'), '128'],
+        [t('admin.listings'), '342'],
+        [t('admin.pending'), '9'],
+        [t('admin.reports'), '3']
       ].map(([label, value]) => `
         <div class="col-sm-6 col-xl-3">
           <div class="metric-card p-4">
@@ -22,23 +23,23 @@ renderPage({
       `).join('')}
     </div>
     <section class="surface-card p-4">
-      <h2 class="h5 fw-semibold mb-3">Recent moderation queue</h2>
+      <h2 class="h5 fw-semibold mb-3">${t('admin.queue')}</h2>
       <div class="table-responsive">
         <table class="table align-middle mb-0">
           <thead>
             <tr>
-              <th scope="col">Listing</th>
-              <th scope="col">Seller</th>
-              <th scope="col">Status</th>
-              <th scope="col" class="text-end">Action</th>
+              <th scope="col">${t('nav.listing')}</th>
+              <th scope="col">${t('admin.seller')}</th>
+              <th scope="col">${t('admin.status')}</th>
+              <th scope="col" class="text-end">${t('admin.action')}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Used city bike</td>
               <td>Maria Petrova</td>
-              <td><span class="badge text-bg-warning">Pending</span></td>
-              <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="/listing.html">Review</a></td>
+              <td><span class="badge text-bg-warning">${t('admin.pending')}</span></td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="/listing.html">${t('admin.review')}</a></td>
             </tr>
           </tbody>
         </table>

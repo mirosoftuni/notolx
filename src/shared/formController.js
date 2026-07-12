@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 export function createFormController(formSelector) {
   const form = document.querySelector(formSelector);
 
@@ -67,7 +69,7 @@ export function createFormController(formSelector) {
     messageEl.className = 'alert';
   }
 
-  function setLoading(isLoading, loadingText = 'Моля, изчакайте...') {
+  function setLoading(isLoading, loadingText = t('form.loading')) {
     if (submitButton) {
       submitButton.disabled = isLoading;
       submitButton.textContent = isLoading ? loadingText : submitLabel;
@@ -124,27 +126,27 @@ export function getAuthErrorMessage(error, fallbackMessage) {
   const message = error.message?.toLowerCase() ?? '';
 
   if (message.includes('invalid login credentials')) {
-    return 'Имейлът или паролата са неправилни.';
+    return t('auth.invalidCredentials');
   }
 
   if (message.includes('email not confirmed')) {
-    return 'Моля, потвърдете имейла си преди вход.';
+    return t('auth.emailNotConfirmed');
   }
 
   if (message.includes('user already registered') || message.includes('already registered')) {
-    return 'Вече има регистрация с този имейл.';
+    return t('auth.alreadyRegistered');
   }
 
   if (message.includes('password')) {
-    return 'Паролата не отговаря на изискванията.';
+    return t('auth.passwordProblem');
   }
 
   if (message.includes('network') || message.includes('failed to fetch')) {
-    return 'Няма връзка със сървъра. Опитайте отново.';
+    return t('auth.network');
   }
 
   if (message.includes('supabase is not configured')) {
-    return 'Липсва Supabase конфигурация. Проверете .env файла.';
+    return t('auth.missingConfig');
   }
 
   return fallbackMessage;

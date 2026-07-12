@@ -18,7 +18,8 @@ function profilePayload(input = {}) {
     phone: input.phone,
     location: input.location,
     avatar_url: input.avatarUrl ?? input.avatar_url,
-    bio: input.bio
+    bio: input.bio,
+    preferred_language: input.preferredLanguage ?? input.preferred_language
   };
 }
 
@@ -36,7 +37,8 @@ export async function register(input, password, profile = {}) {
     full_name: credentials.fullName ?? credentials.full_name,
     phone: credentials.phone,
     location: credentials.location,
-    avatar_url: credentials.avatarUrl ?? credentials.avatar_url
+    avatar_url: credentials.avatarUrl ?? credentials.avatar_url,
+    preferred_language: credentials.preferredLanguage ?? credentials.preferred_language
   });
 
   const options = {

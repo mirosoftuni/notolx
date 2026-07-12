@@ -1,7 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '../styles/main.css';
-import { renderNavigation } from './navigation.js';
+import { getCurrentLanguage } from './i18n.js';
+import { bindLanguageSwitcher, renderNavigation } from './navigation.js';
 
 export function renderPage({
   activePage,
@@ -16,6 +17,7 @@ export function renderPage({
 }) {
   const app = document.querySelector('#app');
   const isHero = headingStyle === 'hero';
+  document.documentElement.lang = getCurrentLanguage();
 
   app.innerHTML = `
     <div class="app-shell min-vh-100">
@@ -41,4 +43,6 @@ export function renderPage({
       </main>
     </div>
   `;
+
+  bindLanguageSwitcher();
 }

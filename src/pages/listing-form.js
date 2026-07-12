@@ -10,6 +10,10 @@ import {
   validateListingPhotoFiles
 } from '../services/storageService.js';
 import { createFormController } from '../shared/formController.js';
+import {
+  localizedCategoryName,
+  t
+} from '../shared/i18n.js';
 import { escapeHtml } from '../shared/listingView.js';
 import { renderPage } from '../shared/page.js';
 
@@ -20,59 +24,59 @@ let editingListing = null;
 
 renderPage({
   activePage: 'create',
-  eyebrow: 'Sell',
-  title: listingId ? 'Edit listing' : 'Create listing',
+  eyebrow: t('listingForm.sell'),
+  title: listingId ? t('listingForm.editTitle') : t('listingForm.createTitle'),
   intro: listingId
-    ? 'Update the core details buyers need before contacting you.'
-    : 'Add the core details buyers need before publishing.',
+    ? t('listingForm.editIntro')
+    : t('listingForm.createIntro'),
   content: `
     <form class="form-card" id="listingForm" novalidate>
       <div class="alert" data-form-message hidden></div>
       <div class="row g-3">
         <div class="col-lg-8">
-          <label class="form-label" for="title">Title</label>
+          <label class="form-label" for="title">${t('form.title')}</label>
           <input class="form-control" id="title" name="title" type="text" minlength="3" maxlength="120" required />
           <div class="invalid-feedback" data-field-error="title"></div>
         </div>
         <div class="col-sm-6 col-lg-2">
-          <label class="form-label" for="price">Price</label>
+          <label class="form-label" for="price">${t('form.price')}</label>
           <input class="form-control" id="price" name="price" type="number" min="0" step="0.01" required />
           <div class="invalid-feedback" data-field-error="price"></div>
         </div>
         <div class="col-sm-6 col-lg-2">
-          <label class="form-label" for="currency">Currency</label>
+          <label class="form-label" for="currency">${t('form.currency')}</label>
           <select class="form-select" id="currency" name="currency">
             <option value="BGN">BGN</option>
             <option value="EUR">EUR</option>
           </select>
         </div>
         <div class="col-md-6">
-          <label class="form-label" for="categoryId">Category</label>
+          <label class="form-label" for="categoryId">${t('form.category')}</label>
           <select class="form-select" id="categoryId" name="categoryId" required>
-            <option value="">Loading categories...</option>
+            <option value="">${t('listingForm.loadingCategories')}</option>
           </select>
           <div class="invalid-feedback" data-field-error="categoryId"></div>
         </div>
         <div class="col-md-6">
-          <label class="form-label" for="location">Location</label>
+          <label class="form-label" for="location">${t('form.location')}</label>
           <input class="form-control" id="location" name="location" type="text" required />
           <div class="invalid-feedback" data-field-error="location"></div>
         </div>
         <div class="col-12">
-          <label class="form-label" for="description">Description</label>
+          <label class="form-label" for="description">${t('form.description')}</label>
           <textarea class="form-control" id="description" name="description" rows="5" minlength="10" required></textarea>
           <div class="invalid-feedback" data-field-error="description"></div>
         </div>
         <div class="col-12">
-          <label class="form-label" for="photos">Photos</label>
+          <label class="form-label" for="photos">${t('form.photos')}</label>
           <input class="form-control" id="photos" name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
-          <div class="form-text" data-existing-photo-summary>Upload up to 6 JPG, PNG, or WebP photos.</div>
+          <div class="form-text" data-existing-photo-summary>${t('listingForm.photoHelp')}</div>
           <div class="invalid-feedback" data-field-error="photos"></div>
         </div>
       </div>
       <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
-        <button class="btn btn-primary" type="submit">${listingId ? 'Save changes' : 'Save listing'}</button>
-        <a class="btn btn-outline-primary" href="${listingId ? `/listing.html?id=${encodeURIComponent(listingId)}` : '/'}">Cancel</a>
+        <button class="btn btn-primary" type="submit">${listingId ? t('listingForm.saveChanges') : t('listingForm.save')}</button>
+        <a class="btn btn-outline-primary" href="${listingId ? `/listing.html?id=${encodeURIComponent(listingId)}` : '/'}">${t('form.cancel')}</a>
       </div>
     </form>
   `
@@ -92,29 +96,29 @@ function validateListing(values) {
   const price = Number(values.price);
 
   if (!values.title) {
-    errors.title = 'Enter a listing title.';
+    errors.title = t('validation.titleRequired');
   } else if (values.title.length < 3) {
-    errors.title = 'The title must be at least 3 characters.';
+    errors.title = t('validation.titleMin');
   }
 
   if (!values.categoryId) {
-    errors.categoryId = 'Choose a category.';
+    errors.categoryId = t('validation.categoryRequired');
   }
 
   if (!values.price) {
-    errors.price = 'Enter a price.';
+    errors.price = t('validation.priceRequired');
   } else if (!Number.isFinite(price) || price < 0) {
-    errors.price = 'Enter a valid non-negative price.';
+    errors.price = t('validation.priceInvalid');
   }
 
   if (!values.location) {
-    errors.location = 'Enter a location.';
+    errors.location = t('validation.locationRequired');
   }
 
   if (!values.description) {
-    errors.description = 'Enter a description.';
+    errors.description = t('validation.descriptionRequired');
   } else if (values.description.length < 10) {
-    errors.description = 'The description must be at least 10 characters.';
+    errors.description = t('validation.descriptionMin');
   }
 
   const photoError = validateListingPhotoFiles(listingForm.form.elements.photos.files);
@@ -137,7 +141,9 @@ function fillForm(listing) {
   const photoCount = listing.photos?.length ?? 0;
 
   if (photoCount > 0) {
-    existingPhotoSummary.textContent = `${photoCount} uploaded photo${photoCount === 1 ? '' : 's'}. Add more JPG, PNG, or WebP photos.`;
+    existingPhotoSummary.textContent = photoCount === 1
+      ? t('listingForm.uploadedPhoto')
+      : t('listingForm.uploadedPhotos', { count: photoCount });
   }
 }
 
@@ -152,8 +158,8 @@ async function requireAuthenticatedUser() {
 
     return user;
   } catch {
-    listingForm.showMessage('Supabase is not configured. Check your .env file.');
-    listingForm.setLoading(true, 'Unavailable');
+    listingForm.showMessage(t('listingForm.configError'));
+    listingForm.setLoading(true, t('form.unavailable'));
     return null;
   }
 }
@@ -162,15 +168,15 @@ async function loadCategories() {
   const { categories, error } = await listCategories();
 
   if (error) {
-    listingForm.showMessage('Categories could not be loaded. Check the Supabase schema.');
-    categorySelect.innerHTML = '<option value="">Categories unavailable</option>';
+    listingForm.showMessage(t('listingForm.categoriesError'));
+    categorySelect.innerHTML = `<option value="">${t('listingForm.categoriesUnavailable')}</option>`;
     return false;
   }
 
   categorySelect.innerHTML = `
-    <option value="">Choose category</option>
+    <option value="">${t('listingForm.chooseCategory')}</option>
     ${categories.map((category) => `
-      <option value="${category.id}">${escapeHtml(category.name)}</option>
+      <option value="${category.id}">${escapeHtml(localizedCategoryName(category))}</option>
     `).join('')}
   `;
 
@@ -185,14 +191,14 @@ async function loadEditableListing() {
   const { listing, error } = await getListing(listingId);
 
   if (error || !listing) {
-    listingForm.showMessage('Listing could not be loaded for editing.');
-    listingForm.setLoading(true, 'Unavailable');
+    listingForm.showMessage(t('listingForm.editLoadError'));
+    listingForm.setLoading(true, t('form.unavailable'));
     return false;
   }
 
   if (listing.owner_id !== currentUser.id) {
-    listingForm.showMessage('Only the listing owner can edit this listing.');
-    listingForm.setLoading(true, 'Not allowed');
+    listingForm.showMessage(t('listingForm.ownerOnly'));
+    listingForm.setLoading(true, t('form.notAllowed'));
     return false;
   }
 
@@ -202,7 +208,7 @@ async function loadEditableListing() {
 }
 
 async function initializeForm() {
-  listingForm.setLoading(true, 'Loading...');
+  listingForm.setLoading(true, t('listingForm.loading'));
   currentUser = await requireAuthenticatedUser();
 
   if (!currentUser) {
@@ -231,7 +237,7 @@ listingForm.form.addEventListener('submit', async (event) => {
   }
 
   listingForm.clearErrors();
-  listingForm.setLoading(true, 'Saving...');
+  listingForm.setLoading(true, t('listingForm.saving'));
 
   try {
     const payload = {
@@ -248,14 +254,14 @@ listingForm.form.addEventListener('submit', async (event) => {
       : await createListing(payload);
 
     if (result.error || !result.listing?.id) {
-      listingForm.showMessage('Listing could not be saved. Check the fields and try again.');
+      listingForm.showMessage(t('listingForm.saveError'));
       return;
     }
 
     const photoFiles = listingForm.form.elements.photos.files;
 
     if (photoFiles.length > 0) {
-      listingForm.setLoading(true, 'Uploading photos...');
+      listingForm.setLoading(true, t('listingForm.uploadingPhotos'));
 
       const uploadResult = await uploadListingPhotos({
         listingId: result.listing.id,
@@ -267,14 +273,14 @@ listingForm.form.addEventListener('submit', async (event) => {
       });
 
       if (uploadResult.error) {
-        listingForm.showMessage('Listing details were saved, but photos could not be uploaded. Check the files and try again.');
+        listingForm.showMessage(t('listingForm.photoUploadError'));
         return;
       }
     }
 
     window.location.assign(`/listing.html?id=${encodeURIComponent(result.listing.id)}`);
   } catch {
-    listingForm.showMessage('Listing could not be saved. Check Supabase configuration and try again.');
+    listingForm.showMessage(t('listingForm.configSaveError'));
   } finally {
     listingForm.setLoading(false);
   }

@@ -1,3 +1,9 @@
+import {
+  getCurrentLanguage,
+  localizedCategoryName,
+  t
+} from './i18n.js';
+
 export function escapeHtml(value = '') {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -10,7 +16,7 @@ export function escapeHtml(value = '') {
 export function formatPrice(price, currency = 'BGN') {
   const amount = Number(price ?? 0);
 
-  return new Intl.NumberFormat('bg-BG', {
+  return new Intl.NumberFormat(getCurrentLanguage() === 'bg' ? 'bg-BG' : 'en-US', {
     style: 'currency',
     currency,
     maximumFractionDigits: Number.isInteger(amount) ? 0 : 2
@@ -21,7 +27,7 @@ export function renderListingCard(listing) {
   const photoUrl = listing.primaryPhoto?.publicUrl;
   const title = escapeHtml(listing.title);
   const location = escapeHtml(listing.location);
-  const category = escapeHtml(listing.category?.name ?? 'Обява');
+  const category = escapeHtml(listing.category ? localizedCategoryName(listing.category) : t('listing.categoryFallback'));
   const price = formatPrice(listing.price, listing.currency);
 
   return `
