@@ -85,23 +85,23 @@ export async function updateListingStatus(id, status) {
     };
   }
 
-  const payload = {
-    status
-  };
+  const { data: rpcData, error: rpcError } = await supabase
+    .rpc('admin_set_listing_status', {
+      p_listing_id: id,
+      p_status: status
+    });
 
-  if (status === 'active') {
-    payload.published_at = new Date().toISOString();
-  }
-
-  if (status === 'sold') {
-    payload.sold_at = new Date().toISOString();
+  if (rpcError || !rpcData?.id) {
+    return {
+      listing: null,
+      error: rpcError ?? new Error('Listing status was not updated.')
+    };
   }
 
   const { data, error } = await supabase
     .from('listings')
-    .update(payload)
-    .eq('id', id)
     .select(ADMIN_LISTING_SELECT)
+    .eq('id', rpcData.id)
     .single();
 
   return {
@@ -177,14 +177,14 @@ export async function setUserRole(userId, role) {
     };
   }
 
-  const { error: upsertError } = await supabase
+  const { error: insertError } = await supabase
     .from('user_roles')
-    .upsert({ user_id: userId, role }, { onConflict: 'user_id,role' });
+    .insert({ user_id: userId, role });
 
-  if (upsertError) {
+  if (insertError && insertError.code !== '23505') {
     return {
       role: null,
-      error: upsertError
+      error: insertError
     };
   }
 

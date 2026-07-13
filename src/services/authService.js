@@ -126,20 +126,34 @@ export async function updateProfile(updates, userId) {
     };
   }
 
-  const payload = compactObject({
-    id,
-    ...profilePayload(updates)
-  });
+  const profileUpdates = compactObject(profilePayload(updates));
 
   const { data, error } = await supabase
     .from('profiles')
-    .upsert(payload)
+    .update(profileUpdates)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+
+  if (error || data) {
+    return {
+      profile: data,
+      error
+    };
+  }
+
+  const { data: insertedProfile, error: insertError } = await supabase
+    .from('profiles')
+    .insert({
+      id,
+      ...profileUpdates
+    })
     .select()
     .single();
 
   return {
-    profile: data,
-    error
+    profile: insertedProfile,
+    error: insertError
   };
 }
 

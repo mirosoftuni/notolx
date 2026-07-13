@@ -149,6 +149,8 @@ General access model:
 - Users can only favorite active listings.
 - Admin-only operations are checked through `private.is_admin()`.
 - Admins can manage categories, roles, and other users' marketplace content.
+- Listing status changes from the admin panel use `public.admin_set_listing_status()` after the security hardening migration.
+- Browser clients have column-limited `UPDATE` grants so regular users cannot directly update admin-controlled listing fields such as `status` and `is_featured`.
 
 The migration uses `TO anon` and `TO authenticated` clauses explicitly, and owner checks use `(select auth.uid())`.
 
@@ -173,8 +175,8 @@ Path convention:
 Access summary:
 
 - Public read access.
-- Authenticated users can upload, update, and delete files under their own user folder.
-- Upload and update policies also check listing ownership.
+- Authenticated users can upload and update files under their own user folder when the path maps to a listing they own.
+- The hardened delete policy also checks that the path maps to a listing owned by the current user.
 - Admins can update or delete listing photo objects.
 
 ### `avatars`
