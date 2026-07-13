@@ -37,6 +37,12 @@ Build for production:
 npm run build
 ```
 
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
 ## Supabase
 
 The schema lives in `supabase/migrations`. Apply migrations through Supabase MCP or the Supabase SQL editor, then run the verification checks documented in `docs/migration-history.md`.
@@ -70,6 +76,59 @@ These credentials are public demo credentials for local/project demonstration on
 | User | `test@test.com` | `Test123!` |
 
 After applying demo data, use `admin@example.com` to test the admin panel and the other accounts to test listing ownership, profile editing, and favorites.
+
+## Netlify Deployment
+
+Live URL:
+
+```text
+https://your-notolx-site.netlify.app
+```
+
+The Netlify build configuration is in `netlify.toml`:
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+
+### Required Environment Variables
+
+Set these in Netlify under Site configuration > Environment variables:
+
+```env
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-or-publishable-key
+```
+
+Use only the public anon/publishable key for frontend deployment. Do not add a Supabase service role key to Netlify.
+
+### Deploy Steps
+
+1. Push the project to GitHub.
+2. In Netlify, create a new site from the repository.
+3. Confirm the build command is `npm run build`.
+4. Confirm the publish directory is `dist`.
+5. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+6. Deploy the site.
+7. Replace the live URL placeholder above with the Netlify production URL.
+
+### Final Local Verification
+
+Before deploying, run:
+
+```bash
+npm install
+npm run build
+npm run preview
+```
+
+Then verify locally:
+
+- Home page loads listings and categories.
+- Register/login work with Supabase Auth.
+- Listing create/edit works for authenticated users.
+- Profile page loads, saves profile data, and uploads avatar.
+- Admin page is blocked for normal users and works for admin users.
+- Browser console has no Supabase configuration errors.
 
 ## Security Notes
 
