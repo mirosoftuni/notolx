@@ -4,18 +4,21 @@ import {
   SUPPORTED_LANGUAGES,
   t
 } from './i18n.js';
+import { getCurrentSession, logout } from '../services/authService.js';
 
 const navItems = [
   { id: 'home', labelKey: 'nav.home', href: '/' },
   { id: 'listing', labelKey: 'nav.listing', href: '/listing.html' },
-  { id: 'create', labelKey: 'nav.create', href: '/listing-form.html' },
-  { id: 'profile', labelKey: 'nav.profile', href: '/profile.html' },
-  { id: 'admin', labelKey: 'nav.admin', href: '/admin.html' }
+  { id: 'create', labelKey: 'nav.create', href: '/listing-form.html' }
 ];
 
 const authItems = [
   { id: 'login', labelKey: 'nav.login', href: '/login.html' },
   { id: 'register', labelKey: 'nav.register', href: '/register.html', style: 'button' }
+];
+
+const userItems = [
+  { id: 'profile', labelKey: 'nav.profile', href: '/profile.html' }
 ];
 
 function renderNavLink(item, activePage) {
@@ -33,32 +36,42 @@ function renderNavLink(item, activePage) {
   `;
 }
 
+function renderLogoutButton() {
+  return `
+    <li class="nav-item">
+      <button class="nav-link nav-logout border-0 bg-transparent" type="button" data-logout>
+        ${t('nav.logout')}
+      </button>
+    </li>
+  `;
+}
+
+function renderAuthNavigation(isLoggedIn, activePage) {
+  const items = isLoggedIn ? userItems : authItems;
+
+  return `
+    ${items.map((item) => renderNavLink(item, activePage)).join('')}
+    ${isLoggedIn ? renderLogoutButton() : ''}
+  `;
+}
+
 function renderLanguageSwitcher() {
   const currentLanguage = getCurrentLanguage();
 
   return `
-    <li class="nav-item dropdown">
-      <button
-        class="nav-link dropdown-toggle bg-transparent border-0"
-        type="button"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-      >
-        ${t('nav.language')}: ${t(`nav.${currentLanguage}`)}
-      </button>
-      <ul class="dropdown-menu dropdown-menu-lg-end">
+    <li class="nav-item">
+      <div class="language-switcher" aria-label="${t('nav.language')}">
         ${SUPPORTED_LANGUAGES.map((language) => `
-          <li>
-            <button
-              class="dropdown-item${language === currentLanguage ? ' active' : ''}"
-              type="button"
-              data-language="${language}"
-            >
-              ${t(`nav.${language}`)}
-            </button>
-          </li>
+          <button
+            class="language-option${language === currentLanguage ? ' active' : ''}"
+            type="button"
+            data-language="${language}"
+            aria-pressed="${language === currentLanguage ? 'true' : 'false'}"
+          >
+            ${t(`nav.${language}`)}
+          </button>
         `).join('')}
-      </ul>
+      </div>
     </li>
   `;
 }
@@ -69,6 +82,43 @@ export function bindLanguageSwitcher() {
       setCurrentLanguage(button.dataset.language);
       window.location.reload();
     });
+  });
+}
+
+export async function bindAuthNavigation(activePage = 'home') {
+  const authNavigation = document.querySelector('[data-auth-navigation]');
+
+  if (!authNavigation) {
+    return;
+  }
+
+  try {
+    const { session } = await getCurrentSession();
+    authNavigation.innerHTML = renderAuthNavigation(Boolean(session), activePage);
+  } catch {
+    authNavigation.innerHTML = renderAuthNavigation(false, activePage);
+  }
+
+  const logoutButton = authNavigation.querySelector('[data-logout]');
+
+  if (!logoutButton) {
+    return;
+  }
+
+  logoutButton.addEventListener('click', async () => {
+    logoutButton.disabled = true;
+    logoutButton.textContent = t('nav.logoutLoading');
+
+    const { error } = await logout();
+
+    if (error) {
+      logoutButton.disabled = false;
+      logoutButton.textContent = t('nav.logout');
+      window.alert(t('nav.logoutError'));
+      return;
+    }
+
+    window.location.assign('/');
   });
 }
 
@@ -98,7 +148,9 @@ export function renderNavigation(activePage = 'home') {
           </ul>
           <ul class="navbar-nav align-items-lg-center gap-lg-2">
             ${renderLanguageSwitcher()}
-            ${authItems.map((item) => renderNavLink(item, activePage)).join('')}
+          </ul>
+          <ul class="navbar-nav align-items-lg-center gap-lg-2" data-auth-navigation>
+            ${renderAuthNavigation(false, activePage)}
           </ul>
         </div>
       </div>

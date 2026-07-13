@@ -87,7 +87,9 @@ renderPage({
             <a class="btn btn-sm btn-outline-primary" href="/listing-form.html">${t('profile.addListing')}</a>
           </div>
           <div data-profile-listings>
-            <div class="text-secondary">${t('profile.loadingListings')}</div>
+            <div class="empty-state">
+              <div class="empty-state-title loading-dots">${t('profile.loadingListings')}</div>
+            </div>
           </div>
         </section>
       </div>
@@ -122,6 +124,15 @@ function setAvatarPreview(url, name) {
   }
 
   avatarPreview.innerHTML = `<span>${escapeHtml(initials(name))}</span>`;
+}
+
+function renderEmptyState(title, body = '') {
+  return `
+    <div class="empty-state">
+      <div class="empty-state-title">${title}</div>
+      ${body ? `<p class="mb-0">${body}</p>` : ''}
+    </div>
+  `;
 }
 
 function validateProfile(values) {
@@ -162,7 +173,7 @@ function fillProfile(profile, user) {
 
 function renderListings(listings) {
   if (listings.length === 0) {
-    listingsEl.innerHTML = `<div class="text-secondary">${t('profile.noListings')}</div>`;
+    listingsEl.innerHTML = renderEmptyState(t('profile.noListings'), t('profile.noListingsHint'));
     return;
   }
 
@@ -206,7 +217,7 @@ async function loadListings() {
   });
 
   if (error) {
-    listingsEl.innerHTML = `<div class="text-secondary">${t('profile.listingsError')}</div>`;
+    listingsEl.innerHTML = renderEmptyState(t('profile.listingsError'), t('home.categoriesUnavailableHint'));
     return;
   }
 
@@ -243,7 +254,7 @@ async function handleDeleteListing(listingId, button) {
   profileForm.showMessage(t('profile.deleteListingSuccess'), 'success');
 
   if (!listingsEl.querySelector('[data-listing-row]')) {
-    listingsEl.innerHTML = `<div class="text-secondary">${t('profile.noListings')}</div>`;
+    listingsEl.innerHTML = renderEmptyState(t('profile.noListings'), t('profile.noListingsHint'));
   }
 }
 
@@ -272,7 +283,7 @@ async function initializeProfile() {
   } catch {
     profileForm.showMessage(t('profile.configError'));
     profileForm.setLoading(true, t('form.unavailable'));
-    listingsEl.innerHTML = `<div class="text-secondary">${t('profile.listingsUnavailable')}</div>`;
+    listingsEl.innerHTML = renderEmptyState(t('profile.listingsUnavailable'), t('home.categoriesUnavailableHint'));
   }
 }
 

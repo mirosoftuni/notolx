@@ -59,6 +59,13 @@ function addPhotoUrls(supabase, listing) {
   });
 
   const photosWithUrls = photos.map((photo) => {
+    if (/^https?:\/\//i.test(photo.storage_path)) {
+      return {
+        ...photo,
+        publicUrl: photo.storage_path
+      };
+    }
+
     const { data } = supabase.storage
       .from(photo.bucket_id ?? 'listing-photos')
       .getPublicUrl(photo.storage_path);

@@ -15,7 +15,9 @@ renderPage({
   content: `
     <div class="alert" data-listing-message hidden></div>
     <div data-listing-detail>
-      <div class="surface-card p-4 text-center text-secondary">${t('listing.loading')}</div>
+      <div class="surface-card empty-state p-4">
+        <div class="empty-state-title loading-dots">${t('listing.loading')}</div>
+      </div>
     </div>
     <section class="mt-5">
       <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
@@ -31,6 +33,15 @@ const params = new URLSearchParams(window.location.search);
 const detailEl = document.querySelector('[data-listing-detail]');
 const similarEl = document.querySelector('[data-similar-listings]');
 const messageEl = document.querySelector('[data-listing-message]');
+
+function renderEmptyState(title, body = '') {
+  return `
+    <div class="surface-card empty-state p-4">
+      <div class="empty-state-title">${title}</div>
+      ${body ? `<p class="mb-0">${body}</p>` : ''}
+    </div>
+  `;
+}
 
 function showMessage(message, type = 'danger') {
   messageEl.className = `alert alert-${type}`;
@@ -115,7 +126,7 @@ async function loadSimilarListings(currentListing) {
   const similarListings = listings.filter((listing) => listing.id !== currentListing.id).slice(0, 3);
   similarEl.innerHTML = similarListings.length > 0
     ? similarListings.map(renderListingCard).join('')
-    : `<div class="col-12 text-secondary">${t('listing.noSimilar')}</div>`;
+    : `<div class="col-12">${renderEmptyState(t('listing.noSimilar'), t('listing.noSimilarHint'))}</div>`;
 }
 
 async function loadListing() {
@@ -123,7 +134,7 @@ async function loadListing() {
     const listingId = await resolveListingId();
 
     if (!listingId) {
-      detailEl.innerHTML = `<div class="surface-card p-4 text-center text-secondary">${t('listing.noActive')}</div>`;
+      detailEl.innerHTML = renderEmptyState(t('listing.noActive'), t('listing.noActiveHint'));
       similarEl.innerHTML = '';
       return;
     }
@@ -132,7 +143,7 @@ async function loadListing() {
 
     if (error || !listing) {
       showMessage(t('listing.loadError'));
-      detailEl.innerHTML = `<div class="surface-card p-4 text-center text-secondary">${t('listing.unavailable')}</div>`;
+      detailEl.innerHTML = renderEmptyState(t('listing.unavailable'), t('listing.unavailableHint'));
       similarEl.innerHTML = '';
       return;
     }
@@ -142,7 +153,7 @@ async function loadListing() {
     await loadSimilarListings(listing);
   } catch {
     showMessage(t('listing.configError'));
-    detailEl.innerHTML = `<div class="surface-card p-4 text-center text-secondary">${t('listing.unavailable')}</div>`;
+    detailEl.innerHTML = renderEmptyState(t('listing.unavailable'), t('listing.unavailableHint'));
     similarEl.innerHTML = '';
   }
 }

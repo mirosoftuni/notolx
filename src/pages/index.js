@@ -37,13 +37,13 @@ renderPage({
       <div class="row g-3">
         <div class="col-6">
           <div class="hero-stat pt-3">
-            <p class="h4 fw-bold mb-0" data-listing-count>...</p>
+            <p class="h4 fw-bold mb-0" data-listing-count>0</p>
             <p class="text-secondary small mb-0">${t('home.activeOffers')}</p>
           </div>
         </div>
         <div class="col-6">
           <div class="hero-stat pt-3">
-            <p class="h4 fw-bold mb-0" data-category-count>...</p>
+            <p class="h4 fw-bold mb-0" data-category-count>0</p>
             <p class="text-secondary small mb-0">${t('home.categories')}</p>
           </div>
         </div>
@@ -68,7 +68,10 @@ renderPage({
       <div class="alert" data-listing-message hidden></div>
       <div class="row g-4 mb-5" data-listing-results>
         <div class="col-12">
-          <div class="surface-card p-4 text-center text-secondary">${t('home.loadingListings')}</div>
+          <div class="surface-card empty-state p-4">
+            <div class="empty-state-title loading-dots">${t('home.loadingListings')}</div>
+            <p class="mb-0">${t('home.loadingHint')}</p>
+          </div>
         </div>
       </div>
     </section>
@@ -81,7 +84,11 @@ renderPage({
         </div>
         <div class="col-lg-8">
           <div class="row g-3" data-category-grid>
-            <div class="col-12 text-secondary">${t('home.loadingCategories')}</div>
+            <div class="col-12">
+              <div class="empty-state">
+                <div class="empty-state-title loading-dots">${t('home.loadingCategories')}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -97,6 +104,15 @@ const categoryGrid = document.querySelector('[data-category-grid]');
 const messageEl = document.querySelector('[data-listing-message]');
 const listingCountEl = document.querySelector('[data-listing-count]');
 const categoryCountEl = document.querySelector('[data-category-count]');
+
+function renderEmptyState(title, body = '') {
+  return `
+    <div class="surface-card empty-state p-4">
+      <div class="empty-state-title">${title}</div>
+      ${body ? `<p class="mb-0">${body}</p>` : ''}
+    </div>
+  `;
+}
 
 function showMessage(message, type = 'danger') {
   messageEl.className = `alert alert-${type}`;
@@ -119,11 +135,23 @@ function renderCategoryOptions(categories) {
 }
 
 function renderCategoryGrid(categories) {
+  if (categories.length === 0) {
+    categoryGrid.innerHTML = `
+      <div class="col-12">
+        ${renderEmptyState(t('home.categoriesUnavailable'), t('home.categoriesUnavailableHint'))}
+      </div>
+    `;
+    return;
+  }
+
   categoryGrid.innerHTML = categories.map((category) => `
-    <div class="col-6 col-md-3">
-      <button class="category-tile text-start w-100 border rounded-3 p-3 h-100 bg-white" type="button" data-category-id="${category.id}">
-        <span class="fw-bold">${escapeHtml(localizedCategoryName(category))}</span>
-        <p class="text-secondary small mb-0 mt-1">${escapeHtml(localizedCategoryDescription(category))}</p>
+    <div class="col-6 col-md-4 col-xl-3">
+      <button class="category-tile w-100" type="button" data-category-id="${category.id}">
+        <span class="category-icon category-icon-${escapeHtml(category.slug)}">
+          ${escapeHtml(localizedCategoryName(category).slice(0, 1))}
+        </span>
+        <span class="category-name">${escapeHtml(localizedCategoryName(category))}</span>
+        <span class="category-description">${escapeHtml(localizedCategoryDescription(category))}</span>
       </button>
     </div>
   `).join('');
@@ -135,9 +163,7 @@ function renderListings(listings) {
   if (listings.length === 0) {
     listingResults.innerHTML = `
       <div class="col-12">
-        <div class="surface-card p-4 text-center text-secondary">
-          ${t('home.noMatches')}
-        </div>
+        ${renderEmptyState(t('home.noMatches'), t('home.noMatchesHint'))}
       </div>
     `;
     return;
@@ -153,7 +179,11 @@ async function loadCategories() {
     result = await listCategories();
   } catch {
     showMessage(t('home.configError'));
-    categoryGrid.innerHTML = `<div class="col-12 text-secondary">${t('home.categoriesUnavailable')}</div>`;
+    categoryGrid.innerHTML = `
+      <div class="col-12">
+        ${renderEmptyState(t('home.categoriesUnavailable'), t('home.categoriesUnavailableHint'))}
+      </div>
+    `;
     categoryCountEl.textContent = '0';
     return;
   }
@@ -162,7 +192,11 @@ async function loadCategories() {
 
   if (error) {
     showMessage(t('home.categoriesLoadError'));
-    categoryGrid.innerHTML = `<div class="col-12 text-secondary">${t('home.categoriesUnavailable')}</div>`;
+    categoryGrid.innerHTML = `
+      <div class="col-12">
+        ${renderEmptyState(t('home.categoriesUnavailable'), t('home.categoriesUnavailableHint'))}
+      </div>
+    `;
     categoryCountEl.textContent = '0';
     return;
   }
@@ -176,7 +210,10 @@ async function loadListings() {
   clearMessage();
   listingResults.innerHTML = `
     <div class="col-12">
-      <div class="surface-card p-4 text-center text-secondary">${t('home.loadingListings')}</div>
+      <div class="surface-card empty-state p-4">
+        <div class="empty-state-title loading-dots">${t('home.loadingListings')}</div>
+        <p class="mb-0">${t('home.loadingHint')}</p>
+      </div>
     </div>
   `;
 
@@ -192,7 +229,7 @@ async function loadListings() {
     listingCountEl.textContent = '0';
     listingResults.innerHTML = `
       <div class="col-12">
-        <div class="surface-card p-4 text-center text-secondary">${t('home.listingsUnavailable')}</div>
+        ${renderEmptyState(t('home.listingsUnavailable'), t('home.categoriesUnavailableHint'))}
       </div>
     `;
     return;
@@ -205,7 +242,7 @@ async function loadListings() {
     listingCountEl.textContent = '0';
     listingResults.innerHTML = `
       <div class="col-12">
-        <div class="surface-card p-4 text-center text-secondary">${t('home.listingsUnavailable')}</div>
+        ${renderEmptyState(t('home.listingsUnavailable'), t('home.categoriesUnavailableHint'))}
       </div>
     `;
     return;

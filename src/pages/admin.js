@@ -33,7 +33,9 @@ renderPage({
   content: `
     <div class="alert" data-admin-message hidden></div>
     <div data-admin-content>
-      <div class="surface-card p-4 text-secondary">${t('admin.loading')}</div>
+      <div class="surface-card empty-state p-4">
+        <div class="empty-state-title loading-dots">${t('admin.loading')}</div>
+      </div>
     </div>
   `
 });
@@ -76,6 +78,18 @@ function roleOptions(selectedRole) {
       ${escapeHtml(t(`role.${role}`))}
     </option>
   `).join('');
+}
+
+function emptyTableCell(message, colspan) {
+  return `
+    <tr>
+      <td class="text-center" colspan="${colspan}">
+        <div class="empty-state py-4">
+          <div class="empty-state-title">${message}</div>
+        </div>
+      </td>
+    </tr>
+  `;
 }
 
 function renderMetrics() {
@@ -150,7 +164,7 @@ function renderListings() {
             </tr>
           </thead>
           <tbody>
-            ${rows || `<tr><td class="text-secondary" colspan="6">${t('admin.noListings')}</td></tr>`}
+            ${rows || emptyTableCell(t('admin.noListings'), 6)}
           </tbody>
         </table>
       </div>
@@ -226,7 +240,7 @@ function renderCategories() {
                 </tr>
               </thead>
               <tbody>
-                ${rows || `<tr><td class="text-secondary" colspan="4">${t('admin.noCategories')}</td></tr>`}
+                ${rows || emptyTableCell(t('admin.noCategories'), 4)}
               </tbody>
             </table>
           </div>
@@ -273,7 +287,7 @@ function renderUsers() {
             </tr>
           </thead>
           <tbody>
-            ${rows || `<tr><td class="text-secondary" colspan="4">${t('admin.noUsers')}</td></tr>`}
+            ${rows || emptyTableCell(t('admin.noUsers'), 4)}
           </tbody>
         </table>
       </div>
@@ -323,14 +337,14 @@ async function initializeAdmin() {
     const adminResult = await isAdmin(user.id);
 
     if (adminResult.error || !adminResult.isAdmin) {
-      contentEl.innerHTML = `<div class="surface-card p-4 text-secondary">${t('admin.notAllowed')}</div>`;
+      contentEl.innerHTML = `<div class="surface-card empty-state p-4"><div class="empty-state-title">${t('admin.notAllowed')}</div></div>`;
       return;
     }
 
     state.currentUser = user;
     await loadAdminData();
   } catch {
-    contentEl.innerHTML = `<div class="surface-card p-4 text-secondary">${t('admin.configError')}</div>`;
+    contentEl.innerHTML = `<div class="surface-card empty-state p-4"><div class="empty-state-title">${t('admin.configError')}</div></div>`;
   }
 }
 

@@ -186,7 +186,7 @@ export async function uploadAvatar({ userId, file }) {
 
 export async function deleteListingPhotoFiles(photos = []) {
   const filesByBucket = photos.reduce((groups, photo) => {
-    if (!photo.storage_path) {
+    if (!photo.storage_path || /^https?:\/\//i.test(photo.storage_path)) {
       return groups;
     }
 

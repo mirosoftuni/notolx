@@ -1,6 +1,6 @@
 # Assessment Checklist
 
-This checklist maps the SoftUni capstone assessment criteria to the implemented NOTOLX files and features.
+This checklist maps the project assessment criteria to the implemented NOTOLX files and features.
 
 | Criterion | Score Range | Implementation Evidence | Status |
 | --- | ---: | --- | --- |

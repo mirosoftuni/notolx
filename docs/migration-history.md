@@ -116,7 +116,12 @@ After applying the migration, verify:
 
 ## 20260713103000_harden_notolx_rls_and_storage.sql
 
-Status: prepared locally, not applied automatically.
+Status: applied through Supabase MCP on July 13, 2026.
+
+Remote migration history entry:
+
+- Version: `20260713041032`
+- Name: `harden_notolx_rls_and_storage`
 
 Migration file:
 
@@ -142,7 +147,42 @@ Frontend compatibility notes:
 - `src/services/listingService.js` still creates listings with `status = active`, which remains allowed by the hardened insert policy.
 - Regular listing edits still update only non-admin fields, matching the new column grants.
 
-Supabase MCP verification to run after applying:
+Verification result after MCP apply on July 13, 2026:
+
+- Public app tables still exist and have RLS enabled:
+  - `profiles`
+  - `user_roles`
+  - `categories`
+  - `listings`
+  - `listing_photos`
+  - `favorites`
+- Relationship checks confirmed the expected foreign keys, including:
+  - `listings_owner_id_fkey`
+  - `listings_category_id_fkey`
+  - `listing_photos_listing_id_fkey`
+  - `listing_photos_owner_id_fkey`
+  - `favorites_user_id_fkey`
+  - `favorites_listing_id_fkey`
+- Policy counts:
+  - `profiles`: `4`
+  - `user_roles`: `4`
+  - `categories`: `5`
+  - `listings`: `5`
+  - `listing_photos`: `5`
+  - `favorites`: `3`
+  - `storage.objects`: `8`
+- Storage buckets verified:
+  - `avatars`: public, 5 MiB limit, JPG/PNG/WebP allowed.
+  - `listing-photos`: public, 10 MiB limit, JPG/PNG/WebP allowed.
+- `public.admin_set_listing_status(uuid, listing_status)` exists with `SECURITY DEFINER`.
+- Authenticated listing grants remain hardened:
+  - no direct authenticated `UPDATE` grant for `status`, `is_featured`, `published_at`, or `sold_at`.
+  - no direct authenticated `INSERT` grant for `is_featured` or `sold_at`.
+- Supabase advisors:
+  - Security: WARN only. Current warnings are for broad public storage SELECT policies, the intentionally checked `SECURITY DEFINER` admin RPC, and leaked-password protection being disabled.
+  - Performance: INFO only for unused indexes, expected on a new/low-traffic demo database.
+
+Reference Supabase MCP verification queries:
 
 1. Confirm RLS is enabled for every public app table:
 
@@ -255,3 +295,31 @@ Expected: `security_type` is `DEFINER`.
 - `get_advisors` with `type = performance`
 
 Expected: no blocking RLS, policy, function exposure, or storage policy issues. Review any advisory remediation URLs before marking the migration as verified.
+
+## 20260713071643_address_security_advisor_warnings.sql
+
+Status: prepared locally, not applied automatically.
+
+Migration file:
+
+`supabase/migrations/20260713071643_address_security_advisor_warnings.sql`
+
+Purpose:
+
+- Remove broad public `SELECT` policies on `storage.objects` for the public `avatars` and `listing-photos` buckets. Public file URLs remain usable, but clients should no longer be able to list every object in those buckets through the Storage API.
+- Revoke anonymous `EXECUTE` access from `public.admin_set_listing_status(uuid, listing_status)`.
+- Keep `authenticated` and `service_role` execute access for the admin panel flow. The function still performs its internal `private.is_admin()` check before changing listing status.
+
+Supabase MCP security advisors on July 13, 2026:
+
+- WARN: `public_bucket_allows_listing` for `avatars`.
+- WARN: `public_bucket_allows_listing` for `listing-photos`.
+- WARN: `anon_security_definer_function_executable` for `public.admin_set_listing_status`.
+- WARN: `authenticated_security_definer_function_executable` for `public.admin_set_listing_status`.
+- WARN: `auth_leaked_password_protection` disabled.
+
+Notes:
+
+- The new migration addresses the two bucket listing warnings and the anonymous RPC execute warning.
+- The authenticated `SECURITY DEFINER` warning is expected while the admin panel uses this checked RPC from the browser. Removing authenticated execute access would break admin status changes unless the admin workflow is moved to a server-side function.
+- Leaked password protection is an Auth project setting and should be enabled from the Supabase dashboard, not through a schema migration.

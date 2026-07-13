@@ -1,5 +1,5 @@
 import { renderPage } from '../shared/page.js';
-import { login } from '../services/authService.js';
+import { isAdmin, login } from '../services/authService.js';
 import {
   createFormController,
   getAuthErrorMessage,
@@ -43,6 +43,11 @@ renderPage({
 
 const loginController = createFormController('#loginForm');
 
+function hasExplicitRedirect() {
+  const params = new URLSearchParams(window.location.search);
+  return params.has('redirect') || params.has('redirectTo') || params.has('next');
+}
+
 function validateLogin(values) {
   const errors = {};
 
@@ -75,7 +80,7 @@ loginController.form.addEventListener('submit', async (event) => {
   loginController.setLoading(true, t('login.loading'));
 
   try {
-    const { error } = await login({
+    const { data, error } = await login({
       email: values.email,
       password: values.password
     });
@@ -85,7 +90,13 @@ loginController.form.addEventListener('submit', async (event) => {
       return;
     }
 
-    window.location.assign(getSafeRedirect('/profile.html'));
+    if (hasExplicitRedirect()) {
+      window.location.assign(getSafeRedirect('/profile.html'));
+      return;
+    }
+
+    const adminResult = await isAdmin(data.user?.id);
+    window.location.assign(adminResult.isAdmin ? '/admin.html' : '/profile.html');
   } catch (error) {
     loginController.showMessage(getAuthErrorMessage(error, t('login.problem')));
   } finally {

@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '../styles/main.css';
 import { getCurrentLanguage } from './i18n.js';
-import { bindLanguageSwitcher, renderNavigation } from './navigation.js';
+import { bindAuthNavigation, bindLanguageSwitcher, renderNavigation } from './navigation.js';
 
 export function renderPage({
   activePage,
@@ -45,4 +45,5 @@ export function renderPage({
   `;
 
   bindLanguageSwitcher();
+  bindAuthNavigation(activePage);
 }

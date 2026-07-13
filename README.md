@@ -1,8 +1,139 @@
 # NOTOLX
 
-NOTOLX is a vanilla JavaScript marketplace app built with Vite, Bootstrap, and Supabase. It uses separate HTML pages with page-specific controllers and Supabase for Auth, Database, and Storage.
+## Български
 
-## Tech Stack
+NOTOLX е marketplace приложение с vanilla JavaScript, изградено с Vite, Bootstrap и Supabase. Проектът използва отделни HTML страници с page-specific controllers, а Supabase осигурява Auth, Database и Storage.
+
+### Tech Stack
+
+- Vite
+- Vanilla JavaScript
+- HTML и CSS
+- Bootstrap
+- Supabase Auth, Postgres, RLS и Storage
+
+### Local Setup
+
+Инсталиране на dependencies:
+
+```bash
+npm install
+```
+
+Създайте `.env` файл от `.env.example` и добавете стойностите за вашия Supabase project:
+
+```env
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-or-publishable-key
+```
+
+Стартиране на приложението:
+
+```bash
+npm run dev
+```
+
+Production build:
+
+```bash
+npm run build
+```
+
+Локален preview на production build:
+
+```bash
+npm run preview
+```
+
+### Supabase
+
+Database schema файловете са в `supabase/migrations`. Migrations се прилагат през Supabase MCP или Supabase SQL editor, след което се изпълняват verification checks, описани в `docs/migration-history.md`.
+
+Важни файлове:
+
+- `docs/database.md`: документация на schema-та и ER diagram.
+- `docs/migration-history.md`: migration history и verification notes.
+- `docs/demo-data.sql`: optional demo seed data.
+
+### Demo Data
+
+Demo seed data е подготвена в:
+
+```text
+docs/demo-data.sql
+```
+
+Прилага се ръчно през Supabase MCP с `_execute_sql` към NOTOLX Supabase project. Не трябва да се прилага автоматично като production migration.
+
+Demo seed-ът създава sample auth users, profiles, roles, categories, listings, listing photos и favorites.
+
+### Netlify Deployment
+
+Live URL:
+
+```text
+https://your-notolx-site.netlify.app
+```
+
+Netlify build configuration е в `netlify.toml`:
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+
+#### Required Environment Variables
+
+Добавете тези променливи в Netlify от Site configuration > Environment variables:
+
+```env
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-or-publishable-key
+```
+
+За frontend deployment използвайте само public anon/publishable key. Не добавяйте Supabase service role key в Netlify.
+
+#### Deploy Steps
+
+1. Push-нете проекта в GitHub.
+2. В Netlify създайте new site от repository-то.
+3. Потвърдете, че build command е `npm run build`.
+4. Потвърдете, че publish directory е `dist`.
+5. Добавете `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`.
+6. Deploy-нете сайта.
+7. Заменете live URL placeholder-а по-горе с production URL-а от Netlify.
+
+#### Final Local Verification
+
+Преди deployment изпълнете:
+
+```bash
+npm install
+npm run build
+npm run preview
+```
+
+След това проверете локално:
+
+- Home page зарежда listings и categories.
+- Register/login работят със Supabase Auth.
+- Listing create/edit работи за authenticated users.
+- Profile page зарежда, запазва profile data и качва avatar.
+- Admin page е блокирана за normal users и работи за admin users.
+- Browser console няма Supabase configuration errors.
+
+### Security Notes
+
+- Не commit-вайте `.env` или Supabase service role keys.
+- Frontend code трябва да използва само publishable/anon keys.
+- RLS и Storage policies са част от Supabase schema-та и трябва да се проверяват след schema changes.
+- Demo credentials трябва да бъдат изтрити или сменени преди public deployment.
+
+---
+
+## English
+
+NOTOLX is a vanilla JavaScript marketplace app built with Vite, Bootstrap, and Supabase. It uses separate HTML pages with page-specific controllers, while Supabase provides Auth, Database, and Storage.
+
+### Tech Stack
 
 - Vite
 - Vanilla JavaScript
@@ -10,7 +141,7 @@ NOTOLX is a vanilla JavaScript marketplace app built with Vite, Bootstrap, and S
 - Bootstrap
 - Supabase Auth, Postgres, RLS, and Storage
 
-## Local Setup
+### Local Setup
 
 Install dependencies:
 
@@ -43,9 +174,9 @@ Preview the production build locally:
 npm run preview
 ```
 
-## Supabase
+### Supabase
 
-The schema lives in `supabase/migrations`. Apply migrations through Supabase MCP or the Supabase SQL editor, then run the verification checks documented in `docs/migration-history.md`.
+The database schema files are in `supabase/migrations`. Apply migrations through Supabase MCP or the Supabase SQL editor, then run the verification checks documented in `docs/migration-history.md`.
 
 Important files:
 
@@ -53,7 +184,7 @@ Important files:
 - `docs/migration-history.md`: migration history and verification notes.
 - `docs/demo-data.sql`: optional demo seed data.
 
-## Demo Data
+### Demo Data
 
 Demo seed data is prepared in:
 
@@ -63,21 +194,9 @@ docs/demo-data.sql
 
 Apply it manually through Supabase MCP using `_execute_sql` against the NOTOLX Supabase project. Do not apply it automatically as a production migration.
 
-The demo seed creates sample auth users, profiles, roles, categories, listings, and favorites.
+The demo seed creates sample auth users, profiles, roles, categories, listings, listing photos, and favorites.
 
-### Demo Accounts
-
-These credentials are public demo credentials for local/project demonstration only. They are not secrets and must not be reused for production accounts.
-
-| Role | Email | Password |
-| --- | --- | --- |
-| User | `demo@example.com` | `Demo123!` |
-| Admin | `admin@example.com` | `Admin123!` |
-| User | `test@test.com` | `Test123!` |
-
-After applying demo data, use `admin@example.com` to test the admin panel and the other accounts to test listing ownership, profile editing, and favorites.
-
-## Netlify Deployment
+### Netlify Deployment
 
 Live URL:
 
@@ -90,7 +209,7 @@ The Netlify build configuration is in `netlify.toml`:
 - Build command: `npm run build`
 - Publish directory: `dist`
 
-### Required Environment Variables
+#### Required Environment Variables
 
 Set these in Netlify under Site configuration > Environment variables:
 
@@ -101,7 +220,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-or-publishable-key
 
 Use only the public anon/publishable key for frontend deployment. Do not add a Supabase service role key to Netlify.
 
-### Deploy Steps
+#### Deploy Steps
 
 1. Push the project to GitHub.
 2. In Netlify, create a new site from the repository.
@@ -111,7 +230,7 @@ Use only the public anon/publishable key for frontend deployment. Do not add a S
 6. Deploy the site.
 7. Replace the live URL placeholder above with the Netlify production URL.
 
-### Final Local Verification
+#### Final Local Verification
 
 Before deploying, run:
 
@@ -130,7 +249,7 @@ Then verify locally:
 - Admin page is blocked for normal users and works for admin users.
 - Browser console has no Supabase configuration errors.
 
-## Security Notes
+### Security Notes
 
 - Do not commit `.env` or Supabase service role keys.
 - Frontend code must use only publishable/anon keys.

@@ -34,15 +34,15 @@ export function renderListingCard(listing) {
     <div class="col-md-6 col-xl-4">
       <a class="listing-card h-100" href="/listing.html?id=${encodeURIComponent(listing.id)}">
         <div
-          class="listing-card-media d-flex align-items-start justify-content-end p-3"
+          class="listing-card-media"
           ${photoUrl ? `style="background-image: url('${escapeHtml(photoUrl)}')"` : ''}
         >
-          <span class="badge text-bg-light">${category}</span>
+          <span class="listing-card-badge">${category}</span>
         </div>
-        <div class="p-4">
-          <p class="text-secondary small mb-1">${location}</p>
-          <h3 class="h5 fw-bold mb-2">${title}</h3>
-          <p class="listing-card-price h5 mb-0">${price}</p>
+        <div class="listing-card-body">
+          <h3 class="listing-card-title">${title}</h3>
+          <p class="listing-card-location">${location}</p>
+          <p class="listing-card-price mb-0">${price}</p>
         </div>
       </a>
     </div>
