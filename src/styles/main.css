@@ -194,6 +194,14 @@ body {
   flex: 0 0 auto;
 }
 
+.admin-table {
+  min-width: 48rem;
+}
+
+.admin-inline-select {
+  min-width: 8.5rem;
+}
+
 .listing-photo {
   min-height: clamp(18rem, 48vw, 32rem);
   background:
