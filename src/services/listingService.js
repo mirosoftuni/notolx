@@ -210,10 +210,40 @@ export async function updateListing(id, input) {
   };
 }
 
+export async function deleteListing(id, { ownerId } = {}) {
+  const supabase = getSupabaseClient();
+
+  if (!id) {
+    return {
+      listing: null,
+      error: new Error('Missing listing id.')
+    };
+  }
+
+  let query = supabase
+    .from('listings')
+    .delete()
+    .eq('id', id);
+
+  if (ownerId) {
+    query = query.eq('owner_id', ownerId);
+  }
+
+  const { data, error } = await query
+    .select('id')
+    .maybeSingle();
+
+  return {
+    listing: data,
+    error
+  };
+}
+
 export const listingService = {
   listCategories,
   listListings,
   getListing,
   createListing,
-  updateListing
+  updateListing,
+  deleteListing
 };

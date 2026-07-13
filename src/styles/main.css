@@ -186,6 +186,14 @@ body {
   font-weight: 800;
 }
 
+.min-width-0 {
+  min-width: 0;
+}
+
+.profile-listing-actions {
+  flex: 0 0 auto;
+}
+
 .listing-photo {
   min-height: clamp(18rem, 48vw, 32rem);
   background:

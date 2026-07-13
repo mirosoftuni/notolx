@@ -184,9 +184,43 @@ export async function uploadAvatar({ userId, file }) {
   };
 }
 
+export async function deleteListingPhotoFiles(photos = []) {
+  const filesByBucket = photos.reduce((groups, photo) => {
+    if (!photo.storage_path) {
+      return groups;
+    }
+
+    const bucket = photo.bucket_id ?? LISTING_PHOTOS_BUCKET;
+    groups[bucket] = groups[bucket] ?? [];
+    groups[bucket].push(photo.storage_path);
+    return groups;
+  }, {});
+
+  if (Object.keys(filesByBucket).length === 0) {
+    return {
+      error: null
+    };
+  }
+
+  const supabase = getSupabaseClient();
+
+  for (const [bucket, paths] of Object.entries(filesByBucket)) {
+    const { error } = await supabase.storage.from(bucket).remove(paths);
+
+    if (error) {
+      return { error };
+    }
+  }
+
+  return {
+    error: null
+  };
+}
+
 export const storageService = {
   uploadListingPhotos,
   uploadAvatar,
+  deleteListingPhotoFiles,
   validateImageFile,
   validateListingPhotoFiles,
   validateAvatarFile

@@ -3,8 +3,12 @@ import {
   getProfile,
   updateProfile
 } from '../services/authService.js';
-import { listListings } from '../services/listingService.js';
 import {
+  deleteListing,
+  listListings
+} from '../services/listingService.js';
+import {
+  deleteListingPhotoFiles,
   uploadAvatar,
   validateAvatarFile
 } from '../services/storageService.js';
@@ -21,6 +25,7 @@ import { renderPage } from '../shared/page.js';
 
 let currentUser = null;
 let currentProfile = null;
+let currentListings = [];
 let avatarPreviewUrl = null;
 
 renderPage({
@@ -162,15 +167,32 @@ function renderListings(listings) {
   }
 
   listingsEl.innerHTML = `
-    <div class="list-group">
+    <div class="list-group profile-listings">
       ${listings.map((listing) => `
-        <a class="list-group-item list-group-item-action d-flex flex-column flex-sm-row justify-content-between gap-2" href="/listing.html?id=${encodeURIComponent(listing.id)}">
-          <span>
-            <span class="fw-semibold">${escapeHtml(listing.title)}</span>
-            <span class="text-secondary small d-block">${escapeHtml(localizedStatus(listing.status))} - ${escapeHtml(listing.location)}</span>
-          </span>
-          <span class="fw-semibold">${formatPrice(listing.price, listing.currency)}</span>
-        </a>
+        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between gap-3" data-listing-row="${escapeHtml(listing.id)}">
+          <div class="min-width-0">
+            <a class="fw-semibold text-decoration-none" href="/listing.html?id=${encodeURIComponent(listing.id)}">
+              ${escapeHtml(listing.title)}
+            </a>
+            <span class="text-secondary small d-block">
+              ${escapeHtml(localizedStatus(listing.status))} - ${escapeHtml(listing.location)}
+            </span>
+            <span class="fw-semibold d-block mt-1">${formatPrice(listing.price, listing.currency)}</span>
+          </div>
+          ${listing.owner_id === currentUser.id ? `
+            <div class="d-flex flex-wrap align-items-start gap-2 profile-listing-actions">
+              <a class="btn btn-sm btn-outline-primary" href="/listing.html?id=${encodeURIComponent(listing.id)}">
+                ${t('profile.viewListing')}
+              </a>
+              <a class="btn btn-sm btn-outline-primary" href="/listing-form.html?id=${encodeURIComponent(listing.id)}">
+                ${t('profile.editListing')}
+              </a>
+              <button class="btn btn-sm btn-outline-danger" type="button" data-delete-listing-id="${escapeHtml(listing.id)}">
+                ${t('profile.deleteListing')}
+              </button>
+            </div>
+          ` : ''}
+        </div>
       `).join('')}
     </div>
   `;
@@ -188,7 +210,41 @@ async function loadListings() {
     return;
   }
 
+  currentListings = listings;
   renderListings(listings);
+}
+
+async function handleDeleteListing(listingId, button) {
+  const row = button.closest('[data-listing-row]');
+  const listingToDelete = currentListings.find((listing) => listing.id === listingId);
+  const confirmed = window.confirm(t('profile.deleteConfirm'));
+
+  if (!confirmed) {
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = t('profile.deletingListing');
+
+  const { listing, error } = await deleteListing(listingId, {
+    ownerId: currentUser.id
+  });
+
+  if (error || !listing) {
+    button.disabled = false;
+    button.textContent = t('profile.deleteListing');
+    profileForm.showMessage(t('profile.deleteListingError'));
+    return;
+  }
+
+  row?.remove();
+  currentListings = currentListings.filter((listing) => listing.id !== listingId);
+  await deleteListingPhotoFiles(listingToDelete?.photos ?? []);
+  profileForm.showMessage(t('profile.deleteListingSuccess'), 'success');
+
+  if (!listingsEl.querySelector('[data-listing-row]')) {
+    listingsEl.innerHTML = `<div class="text-secondary">${t('profile.noListings')}</div>`;
+  }
 }
 
 async function initializeProfile() {
@@ -235,6 +291,16 @@ avatarInput.addEventListener('change', () => {
 
   avatarPreviewUrl = URL.createObjectURL(file);
   setAvatarPreview(avatarPreviewUrl, profileForm.form.elements.displayName.value);
+});
+
+listingsEl.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-delete-listing-id]');
+
+  if (!button) {
+    return;
+  }
+
+  handleDeleteListing(button.dataset.deleteListingId, button);
 });
 
 profileForm.form.addEventListener('submit', async (event) => {
